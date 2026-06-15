@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: go-big-or-go-trades
+
+  datasource:
+    # Defaults match the Postgres service in docker-compose.yml.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gobig}
+    username: ${DB_USER:gobig}
+    password: ${DB_PASSWORD:gobig}
+
+  jpa:
+    hibernate:
+      # Flyway is the single source of truth for the schema.
+      # Hibernate only VALIDATES that the entities match the tables and fails
+      # fast on drift. It never creates or alters tables itself.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    # Log generated SQL in dev. Turn off in production.
+    show-sql: true
+
+  flyway:
+    enabled: true
+    # Migrations live in src/main/resources/db/migration as V1__*, V2__*, ...
+    locations: classpath:db/migration
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# Swagger UI served at http://localhost:8080/swagger-ui.html
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
