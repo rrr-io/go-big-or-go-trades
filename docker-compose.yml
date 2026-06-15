@@ -1,0 +1,25 @@
+# Spins up PostgreSQL for local development.
+# Run:  docker compose up -d
+# Then start the backend with the default datasource settings in application.yml.
+#
+# The backend and frontend will be added here as services in a later step.
+services:
+  db:
+    image: postgres:16
+    container_name: gobig-db
+    environment:
+      POSTGRES_DB: gobig
+      POSTGRES_USER: gobig
+      POSTGRES_PASSWORD: gobig
+    ports:
+      - "5432:5432"
+    volumes:
+      - gobig-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gobig -d gobig"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  gobig-pgdata:
