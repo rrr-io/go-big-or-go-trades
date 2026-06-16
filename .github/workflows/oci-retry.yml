@@ -30,12 +30,16 @@ jobs:
       - name: Launch (or skip if it already exists)
         run: |
           set -e
-          # Stop if an instance with this name already exists (avoids duplicates).
+          # Skip only if a non-terminated instance with this name really exists.
+          # Use jq and default to 0, so an empty result is treated as "none"
+          # (the old --query length(...) returned "" on empty -> false positive).
           COUNT=$(oci compute instance list \
-            --compartment-id "$COMPARTMENT_ID" --display-name "$NAME" \
-            --query "length(data[?\"lifecycle-state\"!='TERMINATED'])" --raw-output)
+            --compartment-id "$COMPARTMENT_ID" --display-name "$NAME" --all 2>/dev/null \
+            | jq -r '[.data[]? | select(."lifecycle-state" != "TERMINATED")] | length' 2>/dev/null || true)
+          COUNT=${COUNT:-0}
+          echo "Non-terminated instances named '$NAME': $COUNT"
           if [ "$COUNT" != "0" ]; then
-            echo "Instance '$NAME' already exists — nothing to do."
+            echo "Instance already exists — nothing to do."
             exit 0
           fi
 
